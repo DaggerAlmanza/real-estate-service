@@ -1,16 +1,22 @@
 import json
 from config.db import connect_db
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from urllib.parse import urlparse, parse_qs
 
 
 class RealEstateHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path == "/property":
+        parsed_path = urlparse(self.path)
+        if parsed_path.path == "/property":
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
-            with open("config/filters.json", "r") as f:
-                filters = json.load(f)
+            query_components = parse_qs(parsed_path.query)
+            filters = {
+                "year": query_components.get("year", [None])[0],
+                "city": query_components.get("city", [None])[0],
+                "state": query_components.get("state", [None])[0]
+            }
             try:
                 real_estates = get_filtered_real_estates(filters)
                 response = {
@@ -84,6 +90,7 @@ def get_filtered_real_estates(filters) -> list:
         "estado": row[3],
         "precio_venta": int(row[4]),
         "descripcion": row[5],
+        # "año": int(row[6]) if row[6] else None
     } for row in result]
 
     cursor.close()
