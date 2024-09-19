@@ -80,7 +80,7 @@ python consult.py
 2. Servicio Conceptual de "Me Gusta"
 
     - Entidad-Relación
-        [![entidad-relaci-n.png](https://i.postimg.cc/8cQMP4QH/entidad-relaci-n.png)](https://postimg.cc/2bGV045b)
+        [![entidad-relaci-n.png](https://i.postimg.cc/NFB55fby/entidad-relaci-n.png)](https://postimg.cc/34fKqhs7)
 
         Creamos una sola tabla llamada PROPERTY_LIKE, relación muchos a muchos: Un usuario puede dar "me gusta" a muchos inmuebles, y un inmueble puede recibir "me gusta" de muchos usuarios. 
 
@@ -96,3 +96,9 @@ python consult.py
             UNIQUE KEY unique_like (user_id, property_id)
         );
         ```
+3. Mejorar el modelo actual de la base de datos
+
+    - Entidad-Relación
+        [![entidad-relacion-estructura.png](https://i.postimg.cc/1Xm3y75w/entidad-relacion-estructura.png)](https://postimg.cc/YGPH33FC)
+
+        Normalización de ciudades reduciendo la redundancia de datos de ciudades, tambien permite consultas más eficientes reñacionadas con las ciudades.
