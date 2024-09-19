@@ -1,67 +1,22 @@
-# real-estate-service
-API REST sin utilizar frameworks para consultar los inmuebles en pre_venta, en_venta y vendidos.
+# Proyecto de Microservicios Inmobiliarios
 
-## Introducción
-<div style="text-align: justify;">
-Habi desea tener una herramienta en la que sus usuarios puedan consultar los inmuebles disponibles para la venta. En esta herramienta los usuarios deben ser capaces de ver tanto los inmuebles vendidos como los disponibles. Con el objetivo de hacer más fácil la búsqueda, se espera que los usuarios puedan aplicar diferentes filtros a la búsqueda.
+## Descripción del Proyecto
+Este proyecto implementa dos microservicios:
 
-Adicionalmente, se espera que los usuarios puedan darle “me gusta” a los inmuebles con el fin de tener un ranking interno de los inmuebles más llamativos.
-</div>
+1. Servicio de Consulta de Inmuebles: Permite a los usuarios consultar los inmuebles disponibles (en pre_venta, en_venta y vendido), aplicando filtros como el año de construcción, ciudad y estado del inmueble.
 
-## _Requerimientos_
-<div style="text-align: justify;">
-Habi desea tener dos microservicios. El primero para que los usuarios externos puedan consultar los inmuebles disponibles almacenados en la base de datos. El segundo para que los usuarios puedan darle “Me gusta” a un inmueble en específico.
-</div>
-
-## _No funcionales_
-- Se espera que entregues código fácil de mantener, fácil de leer, y autodocumentado.
-- Se espera que el código siga una guía de estilos definida (ej. PEP8 para Python).
-- Los microservicios deben construirse para ser consumidos en una arquitectura REST.
-
-## _Funcionales (historias de usuario)_
-
-### _Servicio de consulta_
-- Los usuarios pueden consultar los inmuebles con los estados: “pre_venta”, “en_venta” y “vendido” (los inmuebles con estados distintos nunca deben ser visibles por el usuario).
-- Los usuarios pueden filtrar estos inmuebles por: Año de construcción, Ciudad, Estado.
-- Los usuarios pueden aplicar varios filtros en la misma consulta.
-- Los usuarios pueden ver la siguiente información del inmueble: Dirección, Ciudad, Estado, Precio de venta y Descripción.
-
-### _Servicio de “Me gusta”_
-- Los usuarios pueden darle me gusta a un inmueble en específico y esto debe quedar registrado en la base de datos.
-- Los “Me gusta” son de usuarios registrados, y debe quedar registrado en la base de datos el histórico de “me gusta” de cada usuario y a cuáles inmuebles.
-
-## _Instrucciones para la prueba técnica_
-1. El código debe quedar almacenado en un repositorio de git.
-2. Como tu primer commit, incluye un README detallando la tecnologías que vas a utilizar y cómo vas a abordar el desarrollo.
-3. Si tienes dudas escríbelas en el REAME y resuelvelas tú mismo, junto con la razón de porque las resolviste de esa manera.
-4. En el correo que recibiste la prueba deben estar las credenciales de acceso para conectarse a la base de datos.
-5. El primer requerimiento (Servicio de consulta) es práctico, por lo tanto se espera el código funcional.
-6. En el primer requerimiento, crear un archivo JSON con los datos que esperas que lleguen del front con los filtros solicitados por el usuario.
-7. En el primer requerimiento, el estado actual de un inmueble es el último estado insertado en la tabla “status_history” para dicho inmueble.
-8. Se espera que no modifiques ningún registro en la base de datos, pero si necesitas una mayor cantidad de registros, puedes agregar nuevos.
-9. La información de otros registros puede que tenga inconsistencias, recuerda manejar esas excepciones.
-10. El segundo requerimiento (Servicio de “Me gusta”) es conceptual. No existe el modelo en la base de datos para soportar esta información.
-11. En el segundo requerimiento se espera que tu extiendas este modelo con un diagrama de Entidad-Relación para soportar esta información. Por lo tanto no se espera que escribas código del microservicio, ni modifiques la base de datos. Únicamente el diagrama y el código SQL para extender el modelo, junto con la explicación de porque lo modificaste de esa forma (incluyelo en el README).
-12. Tu código debe tener pruebas unitarias.
-13. Recuerda divertirte haciendo este reto, si tienes bloqueos, continúa con otra parte.
-14. Al terminar la prueba, responde al mismo correo desde el cual se te envió la prueba con el enlace al repositorio.
-
-## _Puntos extra_
-
-Esta parte es completamente opcional. Se considerarán estos retos como puntos extra y harán destacar tu prueba.
-1. Hacer las pruebas unitarias de tu código con TDD (Test-Driven Development).
-2. Proponer un mejor modelo de la estructura actual de base de datos, con el objetivo de mejorar la velocidad de las consultas, se espera un diagrama y la explicación de porque lo modelaste de esa forma.
+2. Servicio de Me Gusta (Conceptual): El servicio conceptual permite a los usuarios dar "Me gusta" a un inmueble. Aunque este servicio no está implementado en el código, se incluye un diagrama de Entidad-Relación y el código SQL necesario para extender la base de datos y soportar esta funcionalidad.
 
 # **Tecnologías y lenguajes**
-<div style="text-align: justify;">
 En este proyecto, utilizaremos Python como lenguaje de programación, para la parte del servidor HTTP, emplearemos la librería http.server para evitar el uso de frameworks (flask, django, fastapi, etc), la base de datos será MySQL, utilizando las credenciales proporcionadas, las pruebas unitarias se llevarán a cabo utilizando pytest, y por ultimo el estilo del código será pythonic, respetando el Zen de Python y siguiendo las convenciones de estilo definidas por PEP 8.
-</div>
 
-### _Construido con_
+### Construido
 * Lenguaje: Python 3.12.3
 * Base de dato: MySQL
+* Pruebas: pytest
+* Manejo de peticiones HTTP: HTTPServer
 
-### _El entorno de trabajo_ 
+### Entorno de trabajo y dependencias
 
 1. Instalar virtualEnv e instalarlo
 Linux
@@ -86,3 +41,58 @@ $ venv/Scripts/activate
 ```sh
 $ pip3 install -r requirements.txt
 ```
+
+## Configuración
+
+1. Se debe configurar el archivo .env con las credenciales de acceso a la base de datos.
+```sh
+DB_HOST=
+DB_NAME=
+DB_PASSWORD=
+DB_PORT=
+DB_USER=
+```
+
+2. Ejecuta las pruebas:
+
+```sh
+pytest
+```
+
+- Test de Conexión a la Base de Datos
+- Test de Consulta de Inmuebles
+
+3. Ejecuta el servidor:
+```sh
+python consult.py
+```
+
+## Rutas del Proyecto
+1. Servicio de Consulta de Inmuebles (GET http://127.0.0.1:8000/property)
+
+    Este servicio permite a los usuarios consultar los inmuebles disponibles, con la posibilidad de aplicar filtros.
+
+### Filtros Disponibles:
+- year: Filtra por el año de construcción del inmueble.
+- city: Filtra por ciudad.
+- state: Filtra por estado del inmueble.
+
+2. Servicio Conceptual de "Me Gusta"
+
+    - Entidad-Relación
+        [![entidad-relaci-n.png](https://i.postimg.cc/8cQMP4QH/entidad-relaci-n.png)](https://postimg.cc/2bGV045b)
+
+        Creamos una sola tabla llamada PROPERTY_LIKE, relación muchos a muchos: Un usuario puede dar "me gusta" a muchos inmuebles, y un inmueble puede recibir "me gusta" de muchos usuarios. 
+
+    - SQL
+        ```sh
+        CREATE TABLE PROPERTY_LIKE (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            property_id INT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES AUTH_USER(id) ON DELETE CASCADE,
+            FOREIGN KEY (property_id) REFERENCES PROPERTY(id) ON DELETE CASCADE,
+            UNIQUE KEY unique_like (user_id, property_id)
+        );
+        ```
