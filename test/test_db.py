@@ -1,11 +1,11 @@
 import mysql.connector
 import pytest
-from app.constant import DATABASE_URL
+from config.constant import DATABASE_DATA
 
 
 @pytest.fixture(scope="module")
 def db_connection():
-    conn = mysql.connector.connect(DATABASE_URL)
+    conn = mysql.connector.connect(**DATABASE_DATA)
     yield conn
     conn.close()
 
