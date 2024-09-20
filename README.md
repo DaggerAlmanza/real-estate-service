@@ -85,7 +85,14 @@ Realizo tres acciones para validar las consultas:
 - year: Filtra por el año de construcción del inmueble.
 - city: Filtra por ciudad.
 - state: Filtra por estado del inmueble.
-
+- El archivo filters.json tiene la estructura del filtrado, ejemplo:
+    ```sh
+    {
+        "year": 2019,
+        "city": "pereira",
+        "state": "vendido"
+    }
+    ```
 2. Servicio Conceptual de "Me Gusta"
 
     - Entidad-Relación
