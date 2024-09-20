@@ -1,91 +1,50 @@
 import pytest
-from consult import get_filtered_real_estates
+from consult import RealEstateHandler
+from io import BytesIO
+from unittest.mock import Mock
 
 
-@pytest.fixture(scope="function")
-def db_connection(mocker):
-    mock_conn = mocker.patch(
-        "mysql.connector.connect",
-        return_value=mocker.MagicMock()
-    )
-    conn = mock_conn()
-    yield conn
-    conn.close()
+class TestRealEstateHandler:
 
+    @pytest.fixture
+    def handler(self):
+        """
+        Fixture to create an instance of RealEstateHandler
+        with the necessary mocks.
+        """
+        handler = RealEstateHandler.__new__(RealEstateHandler)
+        handler.wfile = BytesIO()
+        handler.rfile = BytesIO()
+        handler.request = Mock()
+        handler.client_address = ("127.0.0.1", 8000)
+        handler.server = Mock()
+        return handler
 
-def test_get_filtered_real_estates_no_filters(mocker, db_connection):
-    filters = {}
-    mock_cursor = mocker.MagicMock()
-    db_connection.cursor.return_value = mock_cursor
-    mock_cursor.fetchall.return_value = [
-        (
-            1,
-            "Calle Falsa 123",
-            "bogota",
-            "pre_venta",
-            100000,
-            "Descripción inmueble 1",
-            2019
-        ),
-        (
-            2,
-            "Av. Siempre Viva 456",
-            "medellin",
-            "en_venta",
-            150000,
-            "Descripción inmueble 2",
-            2020
+    def test_valid_query_parameters(self, handler):
+        assert handler.valid_query_parameters(
+            {"year": "2022", "city": "New York"}
         )
-    ]
-    result = get_filtered_real_estates(filters)
-    mock_cursor.execute.assert_called_once()
-    expected_result = [
-        {
-            "direccion": "Calle Falsa 123",
-            "ciudad": "bogota",
-            "estado": "pre_venta",
-            "precio_venta": 100000,
-            "descripcion": "Descripción inmueble 1"
-        },
-        {
-            "direccion": "Av. Siempre Viva 456",
-            "ciudad": "medellin",
-            "estado": "en_venta",
-            "precio_venta": 150000,
-            "descripcion": "Descripción inmueble 2"
-        }
-    ]
-    assert result == expected_result
-
-
-def test_get_filtered_real_estates_with_filters(mocker, db_connection):
-    filters = {
-        "city": "bogota",
-        "state": "pre_venta",
-        "year": 2019
-    }
-    mock_cursor = mocker.MagicMock()
-    db_connection.cursor.return_value = mock_cursor
-    mock_cursor.fetchall.return_value = [
-        (
-            1,
-            "Calle Falsa 123",
-            "bogota",
-            "pre_venta",
-            100000,
-            "Descripción inmueble 1",
-            2019
+        assert not handler.valid_query_parameters(
+            {"year": "2022", "invalid": "param"}
         )
-    ]
-    result = get_filtered_real_estates(filters)
-    mock_cursor.execute.assert_called_once()
-    expected_result = [
-        {
-            "direccion": "Calle Falsa 123",
-            "ciudad": "bogota",
-            "estado": "pre_venta",
-            "precio_venta": 100000,
-            "descripcion": "Descripción inmueble 1"
-        }
-    ]
-    assert result == expected_result
+
+    def test_contains_sql_injection(self, handler):
+        assert handler.contains_sql_injection(
+            {"city": "New York'; DROP TABLE users;"}
+        )
+        assert not handler.contains_sql_injection({"city": "New York"})
+
+    def test_get_query_parameters(self, handler):
+        query = "year=2022&city=New%20York"
+        result = handler.get_query_parameters(query)
+        assert result == {"year": ["2022"], "city": ["New York"]}
+
+    def test_valid_year(self, handler):
+        assert handler.valid_year("2022")
+        assert not handler.valid_year("invalid")
+        assert handler.valid_year(None)
+
+    def test_extract_filters(self, handler):
+        query_params = {"year": ["2022"], "city": ["New York"]}
+        result = handler.extract_filters(query_params)
+        assert result == {"year": "2022", "city": "New York", "state": None}

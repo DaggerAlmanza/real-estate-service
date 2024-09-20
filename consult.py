@@ -1,5 +1,6 @@
 import json
-from config.db import connect_db
+import re
+from config.property_service import fetch_properties_with_filters
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
 
@@ -8,98 +9,104 @@ class RealEstateHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         parsed_path = urlparse(self.path)
         if parsed_path.path == "/property":
-            self.send_response(200)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            query_components = parse_qs(parsed_path.query)
-            filters = {
-                "year": query_components.get("year", [None])[0],
-                "city": query_components.get("city", [None])[0],
-                "state": query_components.get("state", [None])[0]
-            }
+            query_components = self.get_query_parameters(parsed_path.query)
+            filters = self.validate_query_and_filters(query_components)
+            if not filters:
+                return
             try:
-                real_estates = get_filtered_real_estates(filters)
-                response = {
-                    "data": real_estates,
-                    "message": "These are all the available properties."
-                }
-                self.wfile.write(json.dumps(response).encode())
+                real_estates = fetch_properties_with_filters(filters)
+                self.respond_with_success(real_estates)
             except Exception as e:
-                self.send_response(500)
-                error_response = {
-                    "data": None,
-                    "message": "An internal error occurred.",
-                    "detail": str(e)
-                }
-                self.wfile.write(json.dumps(error_response).encode())
+                self.respond_with_error(500, "Internal server error", str(e))
         else:
-            self.send_response(404)
-            self.send_header("Content-type", "application/json")
-            self.end_headers()
-            error_response = {
-                "data": None,
-                "message": "Resource not found.",
-                "detail": "The requested path or resource does not exist."
-            }
-            self.wfile.write(json.dumps(error_response).encode())
+            self.respond_with_error(
+                404,
+                "Resource not found",
+                "The requested path or resource does not exist."
+            )
 
+    def validate_query_and_filters(self, query_components):
+        if not self.valid_query_parameters(query_components):
+            self.respond_with_error(
+                400,
+                "Invalid query parameters",
+                "Only 'year', 'city', and 'state' are allowed."
+            )
+            return
+        filters = self.extract_filters(query_components)
+        if not self.valid_year(filters["year"]):
+            self.respond_with_error(
+                400,
+                "Invalid 'year' parameter",
+                "'year' must be a number."
+            )
+            return
+        if self.contains_sql_injection(filters):
+            self.respond_with_error(
+                400,
+                "Possible SQL injection",
+                "Invalid characters in parameters."
+            )
+            return
+        return filters
 
-def get_filtered_real_estates(filters) -> list:
-    """
-    We perform the query for the latest status, then apply
-    the specified filters, and finally format it as desired.
-    """
-    conn = connect_db()
-    cursor = conn.cursor()
+    def valid_query_parameters(self, query_params):
+        """Validate that only allowed parameters are present."""
+        allowed_params = {"year", "city", "state"}
+        return set(query_params.keys()).issubset(allowed_params)
 
-    query = """
-        SELECT p.id, p.address, p.city, s.name AS status,
-            p.price, p.description, p.year
-        FROM property p
-        JOIN status_history sh ON p.id = sh.property_id
-        JOIN status s ON sh.status_id = s.id
-        WHERE sh.update_date = (
-            SELECT MAX(sh2.update_date)
-            FROM status_history sh2
-            WHERE sh2.property_id = p.id
+    def contains_sql_injection(self, filters):
+        """Check for basic SQL injection patterns in filters."""
+        sql_injection_pattern = re.compile(
+            r"(?i)\b(SELECT|FROM|WHERE|DROP|TABLE)\b|['\";\-]"
         )
-        AND s.name IN ('pre_venta', 'en_venta', 'vendido')
-        AND p.city IS NOT NULL
-        AND p.city <> ''
-        AND p.city <> '0'
-    """
+        return any(
+            value and sql_injection_pattern.search(value)
+            for value in filters.values()
+        )
 
-    params = []
-    if filters.get("year"):
-        query += " AND p.year = %s"
-        params.append(filters["year"])
-    if filters.get("city"):
-        query += " AND p.city = %s"
-        params.append(filters["city"])
-    if filters.get("state"):
-        query += " AND s.name = %s"
-        params.append(filters["state"])
-    query += ";"
+    def get_query_parameters(self, query):
+        """Parse query parameters from the URL."""
+        return parse_qs(query)
 
-    cursor.execute(query, params)
-    result = cursor.fetchall()
+    def valid_year(self, year: int) -> bool:
+        """Check if 'year' is a valid number."""
+        return year is None or year.isdigit()
 
-    real_estates = [{
-        "direccion": row[1],
-        "ciudad": row[2],
-        "estado": row[3],
-        "precio_venta": int(row[4]),
-        "descripcion": row[5],
-        # "año": int(row[6]) if row[6] else None
-    } for row in result]
+    def extract_filters(self, query_params) -> dict:
+        """Extract filters from query parameters."""
+        return {
+            "year": query_params.get("year", [None])[0],
+            "city": query_params.get("city", [None])[0],
+            "state": query_params.get("state", [None])[0]
+        }
 
-    cursor.close()
-    conn.close()
-    return real_estates
+    def respond_with_success(self, data):
+        """Send a successful response with real estate data."""
+        self.send_response(200)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        response = {
+            "data": data,
+            "message": "These are all the available properties."
+        }
+        self.wfile.write(json.dumps(response).encode())
+
+    def respond_with_error(self, status_code, message, detail):
+        """Send an error response."""
+        self.send_response(status_code)
+        self.send_header("Content-type", "application/json")
+        self.end_headers()
+        error_response = {
+            "data": None,
+            "message": message,
+            "detail": detail
+        }
+        self.wfile.write(json.dumps(error_response).encode())
 
 
 if __name__ == "__main__":
     server_address = ("", 8000)
     httpd = HTTPServer(server_address, RealEstateHandler)
-    print("Servicio de consulta de inmuebles corriendo en el puerto 8000...")
+    print("Real estate query service running on port 8000...")
     httpd.serve_forever()
