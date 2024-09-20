@@ -111,3 +111,9 @@ Realizo tres acciones para validar las consultas:
         [![entidad-relacion-estructura.png](https://i.postimg.cc/1Xm3y75w/entidad-relacion-estructura.png)](https://postimg.cc/YGPH33FC)
 
         Normalización de ciudades reduciendo la redundancia de datos de ciudades, tambien permite consultas más eficientes reñacionadas con las ciudades.
+
+4. Además, he desplegado el servicio de consulta de inmuebles en una instancia de EC2 en AWS, el sevicio esta disponible en:
+
+    ```sh
+    http://54.209.230.73:8000/property
+    ```
