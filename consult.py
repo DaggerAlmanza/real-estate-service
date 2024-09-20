@@ -58,7 +58,7 @@ class RealEstateHandler(BaseHTTPRequestHandler):
     def contains_sql_injection(self, filters):
         """Check for basic SQL injection patterns in filters."""
         sql_injection_pattern = re.compile(
-            r"(?i)\b(SELECT|FROM|WHERE|DROP|TABLE)\b|['\";\-]"
+            r"(?i)\b(SELECT|FROM|AND|OR|WHERE|DROP|TABLE)\b|['\";\-]"
         )
         return any(
             value and sql_injection_pattern.search(value)

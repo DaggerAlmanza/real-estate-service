@@ -72,6 +72,15 @@ python consult.py
 
     Este servicio permite a los usuarios consultar los inmuebles disponibles, con la posibilidad de aplicar filtros.
 
+### Validación de Consultas
+Realizo tres acciones para validar las consultas:
+
+1. Validar que los parámetros recibidos en la consulta sean solo los permitidos (year, city, state). Si hay parámetros no permitidos, devuelvo un error 400 (Bad Request).
+
+2. Validar que el parámetro year sea un número. Si no es un número, responde con un error 400 (Bad Request).
+
+3. Validar que no existan caracteres SQL en los parámetros recibidos, ejemplo (SELECT,FROM,AND,OR,WHERE,DROP,TABLE,',"; y -). Si existen, responde con un error 400 (Bad Request).
+
 ### Filtros Disponibles:
 - year: Filtra por el año de construcción del inmueble.
 - city: Filtra por ciudad.
