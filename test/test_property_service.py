@@ -1,8 +1,11 @@
 import pytest
 from config.property_service import (
+    build_property_query,
     fetch_properties_with_filters,
-    build_property_query
 )
+
+
+ADDRESS = "Calle Falsa 123"
 
 
 @pytest.fixture(scope="function")
@@ -23,7 +26,7 @@ def test_fetch_properties_with_filters_no_filters(mocker, db_connection):
     mock_cursor.fetchall.return_value = [
         (
             1,
-            "Calle Falsa 123",
+            ADDRESS,
             "bogota",
             "pre_venta",
             100000,
@@ -44,7 +47,7 @@ def test_fetch_properties_with_filters_no_filters(mocker, db_connection):
     mock_cursor.execute.assert_called_once()
     expected_result = [
         {
-            "direccion": "Calle Falsa 123",
+            "direccion": ADDRESS,
             "ciudad": "bogota",
             "estado": "pre_venta",
             "precio_venta": 100000,
@@ -72,7 +75,7 @@ def test_fetch_properties_with_filters_with_filters(mocker, db_connection):
     mock_cursor.fetchall.return_value = [
         (
             1,
-            "Calle Falsa 123",
+            ADDRESS,
             "bogota",
             "pre_venta",
             100000,
@@ -84,7 +87,7 @@ def test_fetch_properties_with_filters_with_filters(mocker, db_connection):
     mock_cursor.execute.assert_called_once()
     expected_result = [
         {
-            "direccion": "Calle Falsa 123",
+            "direccion": ADDRESS,
             "ciudad": "bogota",
             "estado": "pre_venta",
             "precio_venta": 100000,

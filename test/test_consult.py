@@ -4,6 +4,9 @@ from io import BytesIO
 from unittest.mock import Mock
 
 
+CITY = "New York"
+
+
 class TestRealEstateHandler:
 
     @pytest.fixture
@@ -22,7 +25,7 @@ class TestRealEstateHandler:
 
     def test_valid_query_parameters(self, handler):
         assert handler.valid_query_parameters(
-            {"year": "2022", "city": "New York"}
+            {"year": "2022", "city": CITY}
         )
         assert not handler.valid_query_parameters(
             {"year": "2022", "invalid": "param"}
@@ -32,12 +35,12 @@ class TestRealEstateHandler:
         assert handler.contains_sql_injection(
             {"city": "New York'; DROP TABLE users;"}
         )
-        assert not handler.contains_sql_injection({"city": "New York"})
+        assert not handler.contains_sql_injection({"city": CITY})
 
     def test_get_query_parameters(self, handler):
         query = "year=2022&city=New%20York"
         result = handler.get_query_parameters(query)
-        assert result == {"year": ["2022"], "city": ["New York"]}
+        assert result == {"year": ["2022"], "city": [CITY]}
 
     def test_valid_year(self, handler):
         assert handler.valid_year("2022")
@@ -45,6 +48,6 @@ class TestRealEstateHandler:
         assert handler.valid_year(None)
 
     def test_extract_filters(self, handler):
-        query_params = {"year": ["2022"], "city": ["New York"]}
+        query_params = {"year": ["2022"], "city": [CITY]}
         result = handler.extract_filters(query_params)
-        assert result == {"year": "2022", "city": "New York", "state": None}
+        assert result == {"year": "2022", "city": CITY, "state": None}
