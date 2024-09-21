@@ -10,8 +10,12 @@ class RealEstateHandler(BaseHTTPRequestHandler):
         parsed_path = urlparse(self.path)
         if parsed_path.path == "/property":
             query_components = self.get_query_parameters(parsed_path.query)
-            filters = self.validate_query_and_filters(query_components)
-            if not filters:
+            filters = self.extract_filters(query_components)
+            response = self.validate_query_integrity(
+                query_components,
+                filters
+            )
+            if not response:
                 return
             try:
                 real_estates = fetch_properties_with_filters(filters)
@@ -25,37 +29,42 @@ class RealEstateHandler(BaseHTTPRequestHandler):
                 "The requested path or resource does not exist."
             )
 
-    def validate_query_and_filters(self, query_components):
+    def validate_query_integrity(
+        self,
+        query_components,
+        filters: dict
+    ) -> dict:
+        """Validate the information received from the query."""
+        response = {}
         if not self.valid_query_parameters(query_components):
             self.respond_with_error(
                 400,
                 "Invalid query parameters",
                 "Only 'year', 'city', and 'state' are allowed."
             )
-            return
-        filters = self.extract_filters(query_components)
+            return response
         if not self.valid_year(filters["year"]):
             self.respond_with_error(
                 400,
                 "Invalid 'year' parameter",
                 "'year' must be a number."
             )
-            return
+            return response
         if self.contains_sql_injection(filters):
             self.respond_with_error(
                 400,
                 "Possible SQL injection",
                 "Invalid characters in parameters."
             )
-            return
+            return response
         return filters
 
-    def valid_query_parameters(self, query_params):
+    def valid_query_parameters(self, query_params) -> bool:
         """Validate that only allowed parameters are present."""
         allowed_params = {"year", "city", "state"}
         return set(query_params.keys()).issubset(allowed_params)
 
-    def contains_sql_injection(self, filters):
+    def contains_sql_injection(self, filters) -> bool:
         """Check for basic SQL injection patterns in filters."""
         sql_injection_pattern = re.compile(
             r"(?i)\b(SELECT|FROM|AND|OR|WHERE|DROP|TABLE)\b|['\";\-]"
