@@ -124,3 +124,8 @@ Realizo tres acciones para validar las consultas:
     ```sh
     http://54.209.230.73:8000/property
     ```
+5. La documentación del servicio se encuentra en:
+
+    ```sh
+    http://54.209.230.73:8000/docs
+    ```

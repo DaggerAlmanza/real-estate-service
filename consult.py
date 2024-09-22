@@ -22,6 +22,20 @@ class RealEstateHandler(BaseHTTPRequestHandler):
                 self.respond_with_success(real_estates)
             except Exception as e:
                 self.respond_with_error(500, "Internal server error", str(e))
+        elif self.path == "/docs":
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html")
+            self.end_headers()
+            with open("config/docs/index.html", "r") as f:
+                html_content = f.read()
+                self.wfile.write(html_content.encode())
+        elif self.path == "/swagger.yaml":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-yaml")
+            self.end_headers()
+            with open("config/docs/swagger.yaml", "r") as f:
+                html_content = f.read()
+                self.wfile.write(html_content.encode())
         else:
             self.respond_with_error(
                 404,

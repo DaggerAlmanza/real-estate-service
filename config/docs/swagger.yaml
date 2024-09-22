@@ -1,0 +1,50 @@
+openapi: 3.0.0
+info:
+  title: API de Inmuebles
+  description: Documentación de la API para consultar inmuebles.
+  version: 1.0.0
+paths:
+  /property:
+    get:
+      summary: Obtener inmuebles
+      parameters:
+        - name: year
+          in: query
+          description: Año de construcción del inmueble
+          required: false
+          schema:
+            type: integer
+        - name: city
+          in: query
+          description: Ciudad del inmueble
+          required: false
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: Estado del inmueble
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de inmuebles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    direccion:
+                      type: string
+                    ciudad:
+                      type: string
+                    estado:
+                      type: string
+                    precio_venta:
+                      type: integer
+                    descripcion:
+                      type: string
+        '400':
+          description: Parámetros de consulta inválidos
