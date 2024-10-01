@@ -1,4 +1,5 @@
 import mysql.connector
+
 from config.constant import DATABASE_DATA
 
 

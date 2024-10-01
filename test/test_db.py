@@ -1,5 +1,6 @@
 import mysql.connector
 import pytest
+
 from config.constant import DATABASE_DATA
 
 

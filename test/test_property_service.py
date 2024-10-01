@@ -1,4 +1,5 @@
 import pytest
+
 from config.property_service import (
     build_property_query,
     fetch_properties_with_filters,

@@ -1,8 +1,10 @@
 import json
 import re
-from config.property_service import fetch_properties_with_filters
+
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import urlparse, parse_qs
+
+from config.property_service import fetch_properties_with_filters
 
 
 class RealEstateHandler(BaseHTTPRequestHandler):
@@ -16,7 +18,7 @@ class RealEstateHandler(BaseHTTPRequestHandler):
                 filters
             )
             if not response:
-                return
+                return None
             try:
                 real_estates = fetch_properties_with_filters(filters)
                 self.respond_with_success(real_estates)

@@ -72,6 +72,8 @@ python consult.py
 
     Este servicio permite a los usuarios consultar los inmuebles disponibles, con la posibilidad de aplicar filtros.
 
+2. Documentación del Servicio (GET http://127.0.0.1:8000/docs)
+
 ### Validación de Consultas
 Realizo tres acciones para validar las consultas:
 

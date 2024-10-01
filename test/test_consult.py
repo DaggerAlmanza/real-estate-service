@@ -1,7 +1,9 @@
 import pytest
-from consult import RealEstateHandler
+
 from io import BytesIO
 from unittest.mock import Mock
+
+from consult import RealEstateHandler
 
 
 CITY = "New York"
